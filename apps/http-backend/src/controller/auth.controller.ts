@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import zod from "zod";
+import jwtsecret from "@repo/backend-common/config";
 
 const userSchema = zod.object({
   username: zod.string().min(3, "Username must be at least 3 characters long"),
@@ -18,11 +19,11 @@ export function signup(req: any, res: any) {
 
     userSchema.parse({ username, password });
 
-    if (!process.env.JWT_SECRET) {
-      return res.status(500).json({ message: "Internal server error" });
+    if (!jwtsecret) {
+      throw new Error("JWT_SECRET is not defined in environment variables.");
     }
 
-    const token = jwt.sign({ username }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ username }, jwtsecret, {
       expiresIn: "1h",
     });
 
@@ -48,11 +49,11 @@ export function signin(req: any, res: any) {
 
     // db check
 
-    if (!process.env.JWT_SECRET) {
+    if (!jwtsecret) {
       throw new Error("JWT_SECRET is not defined in environment variables.");
     }
 
-    const token = jwt.sign({ username }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ username }, jwtsecret, {
       expiresIn: "1h",
     });
   } catch (error) {
